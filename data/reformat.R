@@ -17,7 +17,7 @@ code_names = unique(all_data$code)
 #n_people = length(data_people)
 
 flag = 0
-threshold = 0.1
+threshold = 0.2
 
 
 n_code = length(code_names)
