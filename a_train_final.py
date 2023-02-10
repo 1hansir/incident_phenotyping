@@ -12,39 +12,42 @@ import random
 
 def parse_arguments(parser):
     """Read user arguments"""
-    parser.add_argument('--train_directory', type=str,
+    parser.add_argument('--home_path', type=str,
                         default="C:/Users/NORTH/source/incident_phenotyping/",
+                        help='Home path(Directory of whole project)')
+    parser.add_argument('--train_directory', type=str,
+                        default="data/",
                         help='Directory of train data ')
-    parser.add_argument('--train_filename', type=str, default="input_example.csv",
+    parser.add_argument('--train_filename', type=str, default="data_longitudinal.csv",
                         help='Filename of the train data')
     parser.add_argument('--test_directory', type=str,
-                        default="C:/Users/NORTH/source/incident_phenotyping/",
+                        default="data/",
                         help='Directory of test data ')
-    parser.add_argument('--test_filename', type=str, default="input_example.csv",
+    parser.add_argument('--test_filename', type=str, default="data_longitudinal.csv",
                         help='Filename of the test data')
-    parser.add_argument('--embedding_filename', type=str, default="embedding_items_HF_PCA80.csv",
+    parser.add_argument('--embedding_filename', type=str, default="data/embedding_selected_RCC.csv",
                         help='Filename of the embedding_filename data')
-    parser.add_argument('--key_code', type=str, default="PheCode:428",  #PheCode:250.2
+    parser.add_argument('--key_code', type=str, default='PheCode:189.11',
                         help='the name of key_code')
     parser.add_argument('--unlabel_directory', type=str,
-                        default="C:/Users/NORTH/source/incident_phenotyping/",
+                        default="data/",
                         help='Directory of unlabeled data ')
-    parser.add_argument('--unlabel_filename', type=str, default="T2D_unlabeled_codified_all_removed3.csv",
+    parser.add_argument('--unlabel_filename', type=str, default="data_longitudinal.csv",
                         help='Filename of the unlabeled data')
     parser.add_argument('--save_directory', type=str,
-                        default="/n/data1/hsph/biostat/celehs/lab/",
+                        default="Results",
                         help='Directory to save the results')
     parser.add_argument('--results_filename', type=str, default="results_RETTAIN.csv",
                         help='Filename to save the result data')
     parser.add_argument('--colums_min', type=int, default=4,
                         help='data beginning column index  ')
-    parser.add_argument('--colums_max', type=int, default=120,
+    parser.add_argument('--colums_max', type=int, default=239,
                         help='data end column index')
-    parser.add_argument('--epochs', type=int, default=60,
+    parser.add_argument('--epochs', type=int, default=40,
                         help='training epoches')
     parser.add_argument('--month_window', type=int, default=3,
                         help='month_window')
-    parser.add_argument('--max_visits', type=int, default=115,
+    parser.add_argument('--max_visits', type=int, default=120,
                         help='max visits length')
     parser.add_argument('--flag_train_augment', type=int, default=1,
                         help='flag_train_augment if to augment training data with different windows')
@@ -52,7 +55,7 @@ def parse_arguments(parser):
                         help='flag_cross_dataset: do evaluations on the test dataset; otherwise, perform cross-valiation using training dataset')
     parser.add_argument('--number_labels', type=int, default=50,
                         help='number_labels',)
-    parser.add_argument('--embedding_dim', type=int, default=200,
+    parser.add_argument('--embedding_dim', type=int, default=500,
                         help='dimensions of code embeddings', )
     parser.add_argument('--epoch_silver', type=int, default=10,
                         help='epoches of pre-training using silver labels', )
@@ -81,25 +84,26 @@ if __name__ == '__main__':
     print('---readding configurations---- ')
     PARSER = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     ARGS = parse_arguments(PARSER)
-    train_directory = ARGS.train_directory
+    mdir = ARGS.home_path
+    train_directory = mdir + ARGS.train_directory
     train_filename = ARGS.train_filename
-    test_directory = ARGS.test_directory
+    test_directory = mdir + ARGS.test_directory
     test_filename = ARGS.test_filename
     number_labels = ARGS.number_labels
-    flag_cross_dataset=ARGS.flag_cross_dataset
+    flag_cross_dataset = ARGS.flag_cross_dataset
     embedding_filename = ARGS.embedding_filename
     key_code = ARGS.key_code
     month_window = ARGS.month_window
     flag_train_augment = ARGS.flag_train_augment
-    unlabel_directory =  ARGS.test_directory
-    unlabel_filename=ARGS.unlabel_filename
+    unlabel_directory = mdir + ARGS.unlabel_directory
+    unlabel_filename = ARGS.unlabel_filename
 
     print("---train_directory: ", train_directory)
     print("---train_filename: ", train_filename)
     print("---test_directory: ", test_directory)
     print("---test_filename: ", test_filename)
     print("---unlabel_filename: ", unlabel_filename)
-    save_directory = ARGS.save_directory  # make sure this save dirr exist
+    save_directory = mdir + ARGS.save_directory  # make sure this save dirr exist
     results_filename = ARGS.results_filename  # results_RETTAIN.csv
 
     colums_min = ARGS.colums_min
@@ -124,18 +128,18 @@ if __name__ == '__main__':
         target_patient = [["ALL"], ["ALL"], ["ALL"]]
         print("---------------------------------- cross dataset...............")
     data_flag=random.randint(1,10000)
-    get_data_from_csv(train_directory, train_filename,
+    get_data_from_csv(mdir,train_directory, train_filename,
                               train_directory,target_patient=target_patient[0], colums_min=colums_min, colums_max=colums_max,
                               visit_maximum=max_visits,
                               dic_items=dic_colums,month_window=month_window, train_mode="train",
                         key_code=key_code, embedding_file=embedding_filename,
                                      flag_train_augment=flag_train_augment,data_flag=data_flag)
-    get_data_from_csv(test_directory, test_filename,
+    get_data_from_csv(mdir,test_directory, test_filename,
                               test_directory,target_patient=target_patient[1], colums_min=colums_min,
                               colums_max=colums_max, visit_maximum=max_visits,
                               dic_items=dic_colums,month_window=month_window, train_mode="test",
                         key_code=key_code, embedding_file=embedding_filename,flag_train_augment=flag_train_augment,data_flag=data_flag)
-    get_data_from_csv(unlabel_directory, unlabel_filename,
+    get_data_from_csv(mdir,unlabel_directory, unlabel_filename,
                               unlabel_directory,target_patient=target_patient[2], colums_min=colums_min,
                               colums_max=colums_max, visit_maximum=max_visits,
                               dic_items=dic_colums,month_window=month_window,train_mode="ALL",
